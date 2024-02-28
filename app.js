@@ -1,8 +1,10 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const connectDB = require("./config/connectDB");
 
-dotenv.config();
+connectDB();
 
 const app = express();
 
@@ -12,10 +14,18 @@ app.use(cors());
 
 app.use("/assets", express.static("public/images"));
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.use("/api", require("./routes/root"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/animal", require("./routes/animal"));
+app.use("/api/user", require("./routes/user"));
+
+mongoose.connection.once("open", () => {
+  console.log("Connected to mongoDB");
+  app.listen(process.env.PORT, () => {
+    console.log(`Server is running in http://localhost:${process.env.PORT}`);
+  });
 });
 
-app.listen(3002, () => {
-  console.log("Server is running on port 3000");
+mongoose.connection.on("error", (error) => {
+  console.log(error);
 });
